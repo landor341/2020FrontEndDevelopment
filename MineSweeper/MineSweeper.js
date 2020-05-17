@@ -1,10 +1,21 @@
+/*
+TODO:
+    Loss detection that stops further play
+    timer
+    bomb count
+    win detection (keep count of squares revealed and compare it to total squares - bomb count)
+    further styling
+    optimize resetting of game board?
+*/
+
 let flagURL = "Resources/minesweeperFlag.jpg";
 let bombURL = "Resources/minesweeperBomb.jpg";
+let unmarkedURL = "Resources/minesweeperUnmarked.jpg";
 let numUrls = ["Resources/minesweeper0.jpg", "Resources/minesweeper1.jpg", "Resources/minesweeper2.jpg", "Resources/minesweeper3.jpg", "Resources/minesweeper4.jpg", "Resources/minesweeper5.jpg", "Resources/minesweeper6.jpg", "Resources/minesweeper7.jpg", "Resources/minesweeper8.jpg"]; //will contain urls for back-ground images for 0-8
 
 
 class gameSpaceObject {
-    constructor(width, height, parentID, objectID, onClick) {
+    constructor(width, height, parentID, objectID, onClick, onRightClick) {
         this.state = "hidden";
         this.parent = document.getElementById(parentID); 
         this.object = document.createElement("div");
@@ -13,6 +24,7 @@ class gameSpaceObject {
         this.object.style.height = height;
         this.object.id = objectID;
         this.object.addEventListener("click", onClick);
+        this.object.addEventListener('contextmenu', onRightClick, false);
         this.object.className = "game-space";
 
     }
@@ -21,30 +33,50 @@ class gameSpaceObject {
         this.parent.removeChild(this.object);
     }
 
+    resetObject() {
+        this.isBomb = false;
+        this.isFlag = false;
+        this.state = "hidden";
+        this.object.style.backgroundImage = unmarkedURL;
+    }
+
     makeBomb() {
-        this.state = "hiddenBomb";
+        this.isBomb = true;
         this.hiddenImage = bombURL;
     }
 
-    isBomb() {
-        if (this.state == "hiddenBomb" || this.state == "shownBomb") {
-            return true;
+    makeFlag() {
+        if (this.state == "hidden") {
+            this.isFlag = true;
+            this.object.style.backgroundImage = `url(${flagURL})`;
         }
-        return false;
+    }
+
+    removeFlag() {
+        this.isFlag = false;
+        if (this.isBomb) {
+            this.makeBomb();
+            this.object.style.backgroundImage = `url(${unmarkedURL})`;
+        } else {
+            this.hiddenImage = undefined;
+            this.object.style.backgroundImage = `url(${unmarkedURL})`;
+        }
     }
 
     setBackground(url) {
         this.hiddenImage = url;
     }
 
+    hideObject() {
+        this.hiddenImage = unmarkedURL;
+        this.showImage();
+        this.state = "hidden";
+    }
+
     showImage() {
-        if (this.hiddenImage) {
+        if (this.hiddenImage && ! this.isFlag) {
             this.object.style.backgroundImage = `url(${this.hiddenImage})`;
-            if (this.state == "hiddenBomb" || this.state == "shownBomb") {
-                this.state = "shownBomb";
-            } else {
-                this.state = "shown";
-            }
+            this.state = "shown";
         }
     }
 }
@@ -57,7 +89,8 @@ class gameBoard {
         this.boardID = BoardElementID;
         this.bombs = bombs;
         this.firstClick = false;
-        this.handleClick = this.handleClick.bind(this);
+        this.handleLeftClick = this.handleLeftClick.bind(this);
+        this.handleRightClick = this.handleRightClick.bind(this);
         this.generateBoard();
     }
 
@@ -72,7 +105,7 @@ class gameBoard {
             testRow.id = `tableRow${i}`;
             this.board[i] = [];
             for (let j = 0; j < this.width; j++ ) {
-                this.board[i][j] = new gameSpaceObject(`${500 / this.width}px`, `${500 / this.width}px`, `tableRow${i}`, `${i}.${j}`, this.handleClick);
+                this.board[i][j] = new gameSpaceObject(`${500 / this.width}px`, `${500 / this.width}px`, `tableRow${i}`, `${i}.${j}`, this.handleLeftClick, this.handleRightClick);
             }
         }
         this.generateBombs();
@@ -87,49 +120,68 @@ class gameBoard {
         }
     }
 
-    handleClick(event) {
+    handleLeftClick(event) {
         let id = event.target.id;
         let middleIndex = id.indexOf(".");
         this.uncoverElement(parseInt(id.substring(0, middleIndex)), parseInt(id.substring(middleIndex + 1)));
     }
 
-    uncoverElement(x, y) {
-        if (this.board[x][y].isBomb()) {
-            if (!this.firstClick) {
-                //makes sure the first click is an open space
-                resetGame();
-                game.handleClick(event);
-                return;
-            }
-            this.board[x][y].showImage();
+    handleRightClick(event) {
+        let id = event.target.id;
+        let middleIndex = id.indexOf(".");
+        let element = this.board[parseInt(id.substring(0, middleIndex))][parseInt(id.substring(middleIndex + 1))];
+        if (element.isFlag) {
+            element.removeFlag();
+            event.preventDefault(); //stops right click menu from appearing when right clicking element in game area
         } else {
-            //this finds out what number image to assign the block
-            let num = this.getObjectNum(x, y);
-            if (!this.firstClick && num != 0) {
-                //makes sure the first click is an open space
-                resetGame();
-                game.handleClick(event);
-                return;
-            }
-            this.firstClick = true;
-            this.board[x][y].setBackground(numUrls[num]);
-            this.board[x][y].showImage();
-            if (num == 0) {
-                for (let i = -1; i < 2; i++) {
-                    for (let j = -1; j < 2; j++) {
-                        if (this.board[x + i] && !(i == 0 && j == 0)) {
-                            if (this.board[x + i][y+j]) {
-                                if (this.board[x+i][y+j].state != "shown") {
-                                    // console.log(i + " " + j);
-                                    this.uncoverElement(x + i, y + j);
+            element.makeFlag();
+            element.showImage();
+            event.preventDefault(); //stops right click menu from appearing when right clicking element in game area
+        }
+    }
+
+    uncoverElement(x, y) {
+        if (! this.board[x][y].isFlag) {
+            if (this.board[x][y].isBomb) {
+                //TODO: Turn this into loss detection
+                if (!this.firstClick) {
+                    //makes sure the first click is an open space
+                    resetGame();
+                    game.handleLeftClick(event);
+                    return;
+                }
+                this.board[x][y].showImage();
+
+
+            } else {
+                //this finds out what number image to assign the block
+                let num = this.getObjectNum(x, y);
+                if (!this.firstClick && num != 0) {
+                    //makes sure the first click is an open space
+                    resetGame();
+                    game.handleLeftClick(event);
+                    return;
+                }
+                this.firstClick = true;
+                this.board[x][y].setBackground(numUrls[num]);
+                this.board[x][y].showImage();
+                if (num == 0) {
+                    for (let i = -1; i < 2; i++) {
+                        for (let j = -1; j < 2; j++) {
+                            if (this.board[x + i] && !(i == 0 && j == 0)) {
+                                if (this.board[x + i][y+j]) {
+                                    if (this.board[x+i][y+j].state != "shown") {
+                                        //auto-uncovers elements around it if it's an empty space
+                                        this.uncoverElement(x + i, y + j);
+                                    }
                                 }
                             }
                         }
                     }
                 }
+
+
             }
-
-
         }
     }
 
@@ -140,7 +192,7 @@ class gameBoard {
             for (let l = -1; l < 2; l++) {
                 if (this.board[i + k]) {
                     if (this.board[i + k][j+l]) {
-                        if (this.board[i + k][j + l].isBomb()) {
+                        if (this.board[i + k][j + l].isBomb) {
                         count++;
                         }
                     }
@@ -170,15 +222,12 @@ class gameBoard {
         }
     }
 }
+
+
 let game = new gameBoard(15, 15, "game-area", 56);
 function resetGame() {
     if (game.board.length > 0) {
         game.deleteBoard();
     }
     game = new gameBoard(15, 15, "game-area", 56);
-}
-// document.getElementById("startButton").addEventListener("onclick", changeURL);
-
-function handleClick(event) {
-    
 }
