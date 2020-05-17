@@ -25,7 +25,7 @@ body {
     line-height: 0px;
 }
 
-#game-space {
+.game-space {
     border: 0px;
     margin: 0px;
     padding: 0px;
