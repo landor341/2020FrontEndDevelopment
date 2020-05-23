@@ -1,13 +1,23 @@
 body {
-    width: 100vw;
-    height: 100%;
     background-color: black;
+    
+}
+
+nav {
+    background-color: white;
+    height: 1.5em;
+    width: 100vw;
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0px;
 }
 
 #game {
-    width: 700px;
+    width: 50%;
+    min-width: 326px;
     background-color: beige;
-    margin: 0 25%;
+    margin: 3em auto;
     border-radius: 5px;
     padding: 2%;
 }
@@ -19,10 +29,13 @@ body {
 
 
 #game-area {
-    margin: 0 100px;
+    margin: 0 calc((100% - 300px) / 2);
     background-color: gray;
-    width: 500px;
+    width: 300px;
     line-height: 0px;
+    border: 5px;
+    border-style: solid;
+    border-color: rgb(105, 95, 95);
 }
 
 .game-space {
