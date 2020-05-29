@@ -24,7 +24,7 @@ sizeBrowser();
 
 startButton.addEventListener("click", () =>{
     hideStart();
-    snakeGame = new SnakeGame(vw - (25 + (vw % 25)), vh - (25 + (vh % 25)), 25);
+    snakeGame = new SnakeGame(vw - (25 + (vw % 25)), vh - 25 - (25 + (vh % 25)), 25);
 });
 
 window.addEventListener("resize", sizeBrowser);
@@ -67,7 +67,7 @@ const updateSnakeHTML = () => {
                 RealSnakeArray[i].id = "snake";
             }
             RealSnakeArray[i].style.left = `${Math.round(12.5 + (vw % 25 / 2)) + 1 + snakeGame.snakeArray[i].X}px`;
-            RealSnakeArray[i].style.top = `${Math.round(12.5 + (vh % 25 / 2)) + 1 + snakeGame.snakeArray[i].Y}px`; 
+            RealSnakeArray[i].style.top = `${Math.round(12.5 + (vh % 25 / 2)) + 26 + snakeGame.snakeArray[i].Y}px`; 
         }
         if (! appleObject) {
             appleObject = document.createElement('div');
@@ -75,7 +75,7 @@ const updateSnakeHTML = () => {
             appleObject.id = "snake";
             appleObject.style.backgroundColor = "green";
         }
-        appleObject.style.top = `${Math.round(12.5 + (vh % 25 / 2)) + 1 + snakeGame.apple.Y}px`;
+        appleObject.style.top = `${Math.round(12.5 + (vh % 25 / 2)) + 26 + snakeGame.apple.Y}px`;
         appleObject.style.left = `${Math.round(12.5 + (vw % 25 / 2)) + 1 + snakeGame.apple.X}px`;
     }
 }
@@ -88,8 +88,8 @@ function sizeBrowser() {
     main.style.width = `${vw}px`;
     main.style.height = `${vh}px`;
     playArea.style.width = `${vw - (25 + (vw % 25))}px`;
-    playArea.style.height = `${vh - (25 + (vh % 25))}px`;
-    playArea.style.margin = `${Math.round(12.5 + (vh % 25 / 2))}px ${Math.round(12.5 + (vw % 25 / 2))}px ${Math.round(12.5 + (vh % 25 / 2)) - 1}px ${Math.round(12.5 + (vw % 25 / 2))}px`;
+    playArea.style.height = `${vh - (25 + (vh % 25)) - 25}px`;
+    playArea.style.margin = `${Math.round(12.5 + (vh % 25 / 2)) + 25}px ${Math.round(12.5 + (vw % 25 / 2))}px ${Math.round(12.5 + (vh % 25 / 2)) - 1}px ${Math.round(12.5 + (vw % 25 / 2))}px`;
     if (snakeGame && snakeGame.isActive) {
         snakeGame.isActive = false
     }

@@ -1,7 +1,7 @@
 let active = false;
 let lastKeyPress = null;
 let snake = null;
-let frameDelay = 70; //in ms
+let frameDelay = 65; //in ms
 
 
 class Square {

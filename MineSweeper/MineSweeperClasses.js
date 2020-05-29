@@ -94,7 +94,7 @@ class gameBoard {
             testRow.id = `tableRow${i}`;
             this.board[i] = [];
             for (let j = 0; j < this.width; j++ ) {
-                this.board[i][j] = new gameSpaceObject(`${300 / this.width}px`, `${300 / this.width}px`, `tableRow${i}`, `${i}.${j}`, this.handleLeftClick, this.handleRightClick);
+                this.board[i][j] = new gameSpaceObject(`${400 / this.width}px`, `${400 / this.width}px`, `tableRow${i}`, `${i}.${j}`, this.handleLeftClick, this.handleRightClick);
             }
         }
         this.generateBombs();
