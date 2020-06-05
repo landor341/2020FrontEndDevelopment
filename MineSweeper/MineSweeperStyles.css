@@ -6,7 +6,7 @@ body {
 nav {
     background-color: white;
     height: 23px;
-    width: 100vw;
+    width: 100%;
     display: block;
     position: absolute;
     top: 0px;

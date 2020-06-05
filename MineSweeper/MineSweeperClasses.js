@@ -195,7 +195,7 @@ class gameBoard {
     }
 
     generateBombs() {
-        //puts the bombs on the generated grid
+        //puts the bombs on the hidden generated grid
         let i = 0;
         while (i < this.bombs) {
             let attempt = this.board[Math.floor(Math.random() * this.board.length)][Math.floor(Math.random() * this.board[0].length)];
@@ -207,6 +207,7 @@ class gameBoard {
     }
 
     deleteBoard() {
+        //physically deletes objects from the dom
         for (let i = this.height - 1; i >= 0; i--) {
             for (let j = this.width - 1; j >= 0; j--) {
                 this.board[j][i].deleteObject();
